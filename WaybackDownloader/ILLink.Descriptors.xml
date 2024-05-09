@@ -1,0 +1,6 @@
+﻿<linker>
+  <assembly fullname="FASTER.core" />
+  <assembly fullname="Spectre.Console.Cli" />
+  <assembly fullname="Spectre.Console" />
+  <assembly fullname="WaybackDownloader" />
+</linker>

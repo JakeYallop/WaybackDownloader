@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WaybackDownloader": {
+      "commandName": "Project",
+      "commandLineArgs": "archive.org \"./pages\" -m exact --limitPages 10000 -p SomeString1 -r 1 --useMockHandler --clearHistory"
+    }
+  }
+}
