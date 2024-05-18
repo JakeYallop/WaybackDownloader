@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
 #if DEBUG
     public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerHttpClientRateLimiter, bool verbose = false, bool mockData = false)
 #else
-    public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerRateLimiter, bool verbose = false)
+    public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerHttpClientRateLimiter, bool verbose = false)
 #endif
     {
         services.AddLogging(builder =>

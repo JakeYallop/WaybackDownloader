@@ -208,10 +208,12 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
             AnsiConsole.WriteLine("Verbose logging enabled.");
         }
 
+#if DEBUG
         if (settings.UseMockHandler)
         {
             AnsiConsole.Write($"Use mock handler: {settings.UseMockHandler} ");
             AnsiConsole.MarkupLine("[yellow]No real API requests will be made. Garbage data will be saved to disk.[/]");
         }
+#endif
     }
 }
