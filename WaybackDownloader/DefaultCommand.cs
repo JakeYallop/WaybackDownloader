@@ -11,6 +11,9 @@ namespace WaybackDownloader;
 
 internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
 {
+    /// <summary>
+    /// Version string without the leading 'v'.
+    /// </summary>
     public const string Version = "1.0.0";
     public override async Task<int> ExecuteAsync(CommandContext context, Settings settings, CancellationToken cancellationToken)
     {
