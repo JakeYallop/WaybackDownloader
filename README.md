@@ -2,6 +2,9 @@
 
 WaybackDownloader is a CLI tool for downloading the latest copy of all pages of a website from the wayback machine.
 
+## Installation
+Build from source, or download it from the [releases](https://github.com/JakeYallop/WaybackDownloader/releases) page.
+
 ## Basic Usage
 
 To use the tool in its simplest form, use the following command:
@@ -98,4 +101,4 @@ Here's an example of a more complex use case:
 WaybackDownloader.exe http://example.com ./downloads -m Prefix --from 20200101 --to 20201231 -f !statuscode:404 -p keyword1 -p keyword2 --limitPages 100 -r 10
 ```
 
-This command will download pages from ‘http://example.com’, save them to the ‘./downloads’ directory, match URLs that start with ‘http://example.com’, only download pages from the year 2020, exclude pages with a 404 status code, only save pages that contain ‘keyword1’ or ‘keyword2’, process a maximum of 100 pages, and download a maximum of 10 pages per second. 
+This command will download pages from â€˜http://example.comâ€™, save them to the â€˜./downloadsâ€™ directory, match URLs that start with â€˜http://example.comâ€™, only download pages from the year 2020, exclude pages with a 404 status code, only save pages that contain â€˜keyword1â€™ or â€˜keyword2â€™, process a maximum of 100 pages, and download a maximum of 10 pages per second. 
