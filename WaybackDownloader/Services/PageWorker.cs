@@ -1,8 +1,8 @@
-﻿using System.Threading.Channels;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
-using Spectre.Console;
 
 namespace WaybackDownloader.Services;
 
@@ -18,6 +18,25 @@ internal sealed class PageWorker(
     public const string PageWorkerHttpClientRateLimiterKey = "PageWorkerHttpClientRateLimiter";
     private static readonly Dictionary<string, Dictionary<string, int>> PathMap = [];
     private static readonly SemaphoreSlim PathMapSemaphore = new(1, 1);
+
+    private readonly struct PageKey : IEquatable<PageKey>
+    {
+        private PageKey(string key)
+        {
+            Value = key;
+        }
+        public PageKey(string key, string normalizedPath) : this($"{key}-{normalizedPath}") { }
+
+        public string Value { get; }
+
+        public bool Equals(PageKey other) => string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+        public override bool Equals([NotNullWhen(true)] object? obj) => obj is PageKey other && Equals(other);
+        public override int GetHashCode() => Value.GetHashCode(StringComparison.OrdinalIgnoreCase);
+
+
+        public static explicit operator string(PageKey key) => key.Value;
+        public static PageKey UnsafeFromString(string key) => new(key);
+    }
 
     private readonly ChannelReader<CdxRecord> _reader = channel.Reader;
     public async Task StartAsync(string outputDir, CancellationToken cancellationToken)
@@ -39,10 +58,11 @@ internal sealed class PageWorker(
                 logger.UrlTransformed(record.Original, normalizedPath);
 
                 var writePath = Path.Combine(outputDir, normalizedPath);
-                var foundPage = pagesStore.TryGetDownloadedPageTimestamp(normalizedPath, out var timestamp);
+                var pageKey = new PageKey(record.UrlKey, normalizedPath);
+                var foundPage = pagesStore.TryGetDownloadedPageTimestamp(pageKey.Value, out var timestamp);
                 if (!foundPage || timestamp < record.Timestamp)
                 {
-                    await TryWritePageAsync(record, writePath, normalizedPath, foundPage, CancellationToken.None).ConfigureAwait(false);
+                    await TryWritePageAsync(record, writePath, normalizedPath, pageKey, foundPage, CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {
@@ -55,7 +75,7 @@ internal sealed class PageWorker(
         logger.ExitingWorker();
     }
 
-    private async Task TryWritePageAsync(CdxRecord record, string writePath, string normalizedPath, bool isUpdateToExistingPage, CancellationToken cancellationToken)
+    private async Task TryWritePageAsync(CdxRecord record, string writePath, string normalizedPath, PageKey pageKey, bool isUpdateToExistingPage, CancellationToken cancellationToken)
     {
         //max path length
         if (writePath.Length > 260 - Path.GetExtension(writePath).Length - 7)
@@ -76,7 +96,7 @@ internal sealed class PageWorker(
 
         using var fs = new FileStream(writePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None);
         //now we have a file lock, check if our timestamp is greater than any recently newly added timestamps.
-        if (pagesStore.TryGetDownloadedPageTimestamp(normalizedPath, out var updatedTimestamp) && updatedTimestamp >= record.Timestamp)
+        if (pagesStore.TryGetDownloadedPageTimestamp(pageKey.Value, out var updatedTimestamp) && updatedTimestamp >= record.Timestamp)
         {
             return;
         }
@@ -112,7 +132,7 @@ internal sealed class PageWorker(
             logger.WrittenPage(writePath, record.Original, record.Timestamp);
             IncrementCounter(isUpdateToExistingPage);
         }
-        pagesStore.AddPage(normalizedPath, record.Timestamp);
+        pagesStore.AddPage(pageKey.Value, record.Timestamp);
 
         static void IncrementCounter(bool isUpdateToExistingPage)
         {
