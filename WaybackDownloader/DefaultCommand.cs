@@ -24,7 +24,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
         Task? pageWokerRunnerTask = null;
 
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.Token.Register(() => AnsiConsole.WriteLine("Shutting down."));
+        cts.Token.Register(() => AnsiConsole.WriteLine("Shutting down..."));
 
         try
         {
@@ -43,11 +43,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             services
-#if DEBUG
                 .AddCoreCommandServices(rateLimiter, settings.Verbose, mockData: settings.UseMockHandler)
-#else
-                .AddCoreCommandServices(rateLimiter, settings.Verbose)
-#endif
                 .AddSingleton(AnsiConsole.Create(new()))
                 .AddSingleton<Ui>()
                 .AddSingleton(new PageFilters([.. settings.PageFilters]));
@@ -120,12 +116,6 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
             }
             else
             {
-                //TODO: Move this to the dipose method of the pageWorkerRunnerTask, assuming it will not cause a deadlock
-                //if (pageWokerRunnerTask is not null)
-                //{
-                //    await pageWokerRunnerTask.WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None).ConfigureAwait(false);
-                //}
-                AnsiConsole.WriteLine("Background tasks finnished.");
                 var disposeException = await DisposeProviderAsync(serviceProvider).ConfigureAwait(false);
                 if (disposeException is not null)
                 {
@@ -211,12 +201,10 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
             AnsiConsole.WriteLine("Verbose logging enabled.");
         }
 
-#if DEBUG
         if (settings.UseMockHandler)
         {
             AnsiConsole.Write($"Use mock handler: {settings.UseMockHandler} ");
             AnsiConsole.MarkupLine("[yellow]No real API requests will be made. Garbage data will be saved to disk.[/]");
         }
-#endif
     }
 }

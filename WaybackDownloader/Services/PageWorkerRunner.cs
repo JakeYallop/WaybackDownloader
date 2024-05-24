@@ -1,6 +1,7 @@
 ﻿using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 
 namespace WaybackDownloader.Services;
 
@@ -88,7 +89,8 @@ public sealed class PageWorkerRunner(IServiceProvider serviceProvider, ILogger<P
 
     private async ValueTask DisposeAllAsync()
     {
-        await WaitForCompletionAsync().WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None).ConfigureAwait(false);
+        AnsiConsole.WriteLine("Waiting up to 10 seconds for workers to finish.");
+        await WaitForCompletionAsync().WaitAsync(TimeSpan.FromSeconds(10), CancellationToken.None).ConfigureAwait(false);
         return;
     }
 }

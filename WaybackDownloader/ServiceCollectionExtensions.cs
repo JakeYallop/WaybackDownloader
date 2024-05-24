@@ -11,11 +11,7 @@ using WaybackDownloader.Services;
 namespace WaybackDownloader;
 public static class ServiceCollectionExtensions
 {
-#if DEBUG
     public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerHttpClientRateLimiter, bool verbose = false, bool mockData = false)
-#else
-    public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerHttpClientRateLimiter, bool verbose = false)
-#endif
     {
         services.AddLogging(builder =>
         {
@@ -28,12 +24,11 @@ public static class ServiceCollectionExtensions
         .ConfigureHttpClientDefaults(configure =>
         {
             configure.RemoveAllLoggers();
-#if DEBUG
+
             if (mockData)
             {
                 configure.ConfigurePrimaryHttpMessageHandler(s => new MockDataHttpMessageHandler());
             }
-#endif
             configure.ConfigureHttpClient(x =>
             {
                 x.DefaultRequestHeaders.UserAgent.Add(new("WaybackDownloader", DefaultCommand.Version));
@@ -86,15 +81,14 @@ public static class ServiceCollectionExtensions
             configure
                 .AddRateLimiter(pageWorkerHttpClientRateLimiter)
                 .AddRetry(new HttpRetryStrategyOptions
-                {
-                    BackoffType = DelayBackoffType.Linear,
-                    MaxRetryAttempts = 3,
-                    Delay = TimeSpan.FromSeconds(10),
-                    ShouldRetryAfterHeader = true,
-                    UseJitter = true,
-                    ShouldHandle = static args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome) || args.Outcome.Result?.StatusCode is System.Net.HttpStatusCode.RequestTimeout),
-                })
-                .AddCircuitBreaker(new CircuitBreakerStrategyOptions<HttpResponseMessage>());
+                 {
+                     BackoffType = DelayBackoffType.Linear,
+                     MaxRetryAttempts = 3,
+                     Delay = TimeSpan.FromSeconds(10),
+                     ShouldRetryAfterHeader = true,
+                     UseJitter = true,
+                     ShouldHandle = static args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome) || args.Outcome.Result?.StatusCode is System.Net.HttpStatusCode.RequestTimeout),
+                 });
         })
         .Services
         .AddSingleton(Channel.CreateBounded<CdxRecord>(new BoundedChannelOptions(200)
@@ -104,9 +98,6 @@ public static class ServiceCollectionExtensions
             AllowSynchronousContinuations = false
         }))
         .AddSingleton<DownloaderService>()
-        //Do not re-register WaybackCdxClient, otherwise previous HttpClient configuration is lost.
-        //.AddSingleton<WaybackCdxClient>()
-        //.AddSingleton<PageWorker>()
         .AddSingleton<PageWorkerRunner>()
         .AddSingleton<PagesStore>()
         .AddSingleton<IConsoleMessageColorProvider, SpectreConsoleMessageColorProvider>();

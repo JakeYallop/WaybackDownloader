@@ -85,10 +85,8 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
         [DefaultValue(false)]
         public bool Verbose { get; init; }
 
-#if DEBUG
         [CommandOption("--useMockHandler")]
         public bool UseMockHandler { get; set; }
-#endif
 
         public override ValidationResult Validate()
         {
