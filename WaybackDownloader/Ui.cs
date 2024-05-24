@@ -40,10 +40,9 @@ internal sealed class Ui(IAnsiConsole console, CollectedLogMessages logMessages)
     private static readonly Style NumberStyle = new(Color.Aqua, Color.Black);
     private async Task LogStatsAsync(CancellationToken cancellationToken)
     {
+        await Task.Delay(3000, default).ConfigureAwait(false);
         while (!cancellationToken.IsCancellationRequested)
         {
-            await Task.Delay(3000, default).ConfigureAwait(false);
-
             var filesWritten = Counters.FilesWritten.Count;
             var filesSkipped = Counters.FilesSkipped.Count;
             var filesUpdated = Counters.FilesUpdated.Count;
@@ -59,6 +58,8 @@ internal sealed class Ui(IAnsiConsole console, CollectedLogMessages logMessages)
             p.Append(filesUpdated.ToString(CultureInfo.CurrentCulture), NumberStyle);
             p.Append(Environment.NewLine);
             _console.Write(p);
+
+            await Task.Delay(3000, default).ConfigureAwait(false);
         }
     }
 
