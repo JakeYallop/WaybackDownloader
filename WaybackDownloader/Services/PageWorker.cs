@@ -33,7 +33,6 @@ internal sealed class PageWorker(
         public override bool Equals([NotNullWhen(true)] object? obj) => obj is PageKey other && Equals(other);
         public override int GetHashCode() => Value.GetHashCode(StringComparison.OrdinalIgnoreCase);
 
-
         public static explicit operator string(PageKey key) => key.Value;
         public static PageKey UnsafeFromString(string key) => new(key);
     }
