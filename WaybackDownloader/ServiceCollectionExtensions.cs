@@ -81,14 +81,14 @@ public static class ServiceCollectionExtensions
             configure
                 .AddRateLimiter(pageWorkerHttpClientRateLimiter)
                 .AddRetry(new HttpRetryStrategyOptions
-                 {
-                     BackoffType = DelayBackoffType.Linear,
-                     MaxRetryAttempts = 3,
-                     Delay = TimeSpan.FromSeconds(10),
-                     ShouldRetryAfterHeader = true,
-                     UseJitter = true,
-                     ShouldHandle = static args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome) || args.Outcome.Result?.StatusCode is System.Net.HttpStatusCode.RequestTimeout),
-                 });
+                {
+                    BackoffType = DelayBackoffType.Linear,
+                    MaxRetryAttempts = 3,
+                    Delay = TimeSpan.FromSeconds(10),
+                    ShouldRetryAfterHeader = true,
+                    UseJitter = true,
+                    ShouldHandle = static args => ValueTask.FromResult(HttpClientResiliencePredicates.IsTransient(args.Outcome) || args.Outcome.Result?.StatusCode is System.Net.HttpStatusCode.RequestTimeout),
+                });
         })
         .Services
         .AddSingleton(Channel.CreateBounded<CdxRecord>(new BoundedChannelOptions(200)

@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
-using Spectre.Console;
 
 namespace WaybackDownloader.Services;
 
