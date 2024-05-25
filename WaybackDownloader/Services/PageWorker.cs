@@ -61,7 +61,7 @@ internal sealed class PageWorker(
                 var foundPage = pagesStore.TryGetDownloadedPageTimestamp(pageKey.Value, out var timestamp);
                 if (!foundPage || timestamp < record.Timestamp)
                 {
-                    await TryWritePageAsync(record, writePath, normalizedPath, pageKey, foundPage, CancellationToken.None).ConfigureAwait(false);
+                    await TryWritePageAsync(record, writePath, pageKey, foundPage, CancellationToken.None).ConfigureAwait(false);
                 }
                 else
                 {
@@ -74,7 +74,7 @@ internal sealed class PageWorker(
         logger.ExitingWorker();
     }
 
-    private async Task TryWritePageAsync(CdxRecord record, string writePath, string normalizedPath, PageKey pageKey, bool isUpdateToExistingPage, CancellationToken cancellationToken)
+    private async Task TryWritePageAsync(CdxRecord record, string writePath, PageKey pageKey, bool isUpdateToExistingPage, CancellationToken cancellationToken)
     {
         //max path length
         if (writePath.Length > 260 - Path.GetExtension(writePath).Length - 7)
