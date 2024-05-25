@@ -23,8 +23,12 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
         public string MatchUrl { get; init; } = null!;
 
         [CommandArgument(1, "<outputDir>")]
-        [Description("Where to output downloaded files.")]
+        [Description("Location to store downloaded webpages.")]
         public DirectoryInfo OutputDir { get; init; } = null!;
+
+        [CommandOption("--historyLogDir|-h")]
+        [Description("Log location that stores information about which webpages have already been downloaded.")]
+        public DirectoryInfo DownloadHistoryLogDir { get; init; } = new("./downloadHistory");
 
         [CommandOption("-m|--matchType")]
         [DefaultValue(MatchTypes.Exact)]
@@ -74,7 +78,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
         public int RateLimit { get; init; } = 5;
 
         [CommandOption("--clearHistory")]
-        [Description("Clear the history of previously downloaded pages.")]
+        [Description("Clear any information about previously downloaded pages. This will force the tool to start from a completely empty state.")]
         public bool ClearHistory { get; init; }
 
         /// <summary>
@@ -120,4 +124,64 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
         }
     }
 
+    private static void PrintSettings(Settings settings)
+    {
+        AnsiConsole.WriteLine($"Match URL: {settings.MatchUrl}");
+        AnsiConsole.WriteLine($"Match type: {settings.MatchType}");
+
+        if (settings.From is not null)
+        {
+            AnsiConsole.WriteLine($"From: {settings.From}");
+        }
+
+        if (settings.To is not null)
+        {
+            AnsiConsole.WriteLine($"To: {settings.To}");
+        }
+
+        if (settings.Filters.Length > 0)
+        {
+            AnsiConsole.WriteLine("Filters:");
+            foreach (var filter in settings.Filters)
+            {
+                AnsiConsole.WriteLine($"  {filter}");
+            }
+        }
+
+        if (settings.PageFilters.Length > 0)
+        {
+            AnsiConsole.WriteLine("Page filters:");
+            foreach (var filter in settings.PageFilters)
+            {
+                AnsiConsole.WriteLine($"  {filter}");
+            }
+        }
+
+        if (settings.LimitPages is not null)
+        {
+            AnsiConsole.WriteLine($"Limit pages: {settings.LimitPages}");
+        }
+
+        AnsiConsole.WriteLine($"Rate limit (pages/second): {settings.RateLimit}");
+        AnsiConsole.WriteLine($"Output directory: {settings.OutputDir}");
+        AnsiConsole.WriteLine($"Checkpoints directory: {settings.DownloadHistoryLogDir}");
+
+        if (settings.ClearHistory)
+        {
+            AnsiConsole.Write("Clear history: true ");
+            AnsiConsole.MarkupLine("[yellow]Clearing all history on pages that previously been downloaded.[/]");
+        }
+
+        if (settings.Verbose)
+        {
+            AnsiConsole.Write($"Verbose: {settings.Verbose} ");
+            AnsiConsole.WriteLine("Verbose logging enabled.");
+        }
+
+        if (settings.UseMockHandler)
+        {
+            AnsiConsole.Write($"Use mock handler: {settings.UseMockHandler} ");
+            AnsiConsole.MarkupLine("[yellow]No real API requests will be made. Garbage data will be saved to disk.[/]");
+        }
+    }
 }

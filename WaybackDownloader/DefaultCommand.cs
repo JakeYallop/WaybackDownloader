@@ -43,7 +43,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             services
-                .AddCoreCommandServices(rateLimiter, settings.Verbose, mockData: settings.UseMockHandler)
+                .AddCoreCommandServices(rateLimiter, settings.DownloadHistoryLogDir.FullName, settings.Verbose, settings.UseMockHandler)
                 .AddSingleton(AnsiConsole.Create(new()))
                 .AddSingleton<Ui>()
                 .AddSingleton(new PageFilters([.. settings.PageFilters]));
@@ -145,66 +145,6 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
             AnsiConsole.WriteLine("Exception encountered during dispose.");
             AnsiConsole.WriteException(ex);
             return ex;
-        }
-    }
-
-    private static void PrintSettings(DefaultCommand.Settings settings)
-    {
-        AnsiConsole.WriteLine($"Match URL: {settings.MatchUrl}");
-        AnsiConsole.WriteLine($"Match type: {settings.MatchType}");
-
-        if (settings.From is not null)
-        {
-            AnsiConsole.WriteLine($"From: {settings.From}");
-        }
-
-        if (settings.To is not null)
-        {
-            AnsiConsole.WriteLine($"To: {settings.To}");
-        }
-
-        if (settings.Filters.Length > 0)
-        {
-            AnsiConsole.WriteLine("Filters:");
-            foreach (var filter in settings.Filters)
-            {
-                AnsiConsole.WriteLine($"  {filter}");
-            }
-        }
-
-        if (settings.PageFilters.Length > 0)
-        {
-            AnsiConsole.WriteLine("Page filters:");
-            foreach (var filter in settings.PageFilters)
-            {
-                AnsiConsole.WriteLine($"  {filter}");
-            }
-        }
-
-        if (settings.LimitPages is not null)
-        {
-            AnsiConsole.WriteLine($"Limit pages: {settings.LimitPages}");
-        }
-
-        AnsiConsole.WriteLine($"Rate limit (pages/second): {settings.RateLimit}");
-        AnsiConsole.WriteLine($"Output directory: {settings.OutputDir}");
-
-        if (settings.ClearHistory)
-        {
-            AnsiConsole.Write("Clear history: true ");
-            AnsiConsole.MarkupLine("[yellow]Clearing all history on pages that previously been downloaded.[/]");
-        }
-
-        if (settings.Verbose)
-        {
-            AnsiConsole.Write($"Verbose: {settings.Verbose} ");
-            AnsiConsole.WriteLine("Verbose logging enabled.");
-        }
-
-        if (settings.UseMockHandler)
-        {
-            AnsiConsole.Write($"Use mock handler: {settings.UseMockHandler} ");
-            AnsiConsole.MarkupLine("[yellow]No real API requests will be made. Garbage data will be saved to disk.[/]");
         }
     }
 }

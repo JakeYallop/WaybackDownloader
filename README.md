@@ -17,6 +17,12 @@ In this command, `www.example.com` is the website to download, and `./example` i
 
 ## Command Line Options
 
+### History Log Directory
+The Wayback Downloader uses a log to store information about webpages it has already downloaded. By default, a folder is created in the current working directory under "/downloadHistory". To specify a custom path, use the `--historyLogDir` option.
+```bash
+WaybackDownloader.exe <matchUrl> <outputDir> --historyLogDir ../../customHistoryLogFolder
+```
+
 ### Match Type
 
 Specify the match type using the `-m` or `--matchType` option. The default value is 'exact'. Other possible values include 'prefix', 'domain', and 'host'.

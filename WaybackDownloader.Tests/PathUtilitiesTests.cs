@@ -29,10 +29,13 @@ public class PathUtilitiesTests
         Assert.Equal(expectedPath, actualPath);
     }
 
-    public static IEnumerable<object[]> GetTestDataWithDisallowedPathChars()
+    public static TheoryData<string, string> GetTestDataWithDisallowedPathChars()
     {
 
         var invalidCharacters = new string(Path.GetInvalidFileNameChars());
-        yield return new object[] { $"https://www.archive.org/s/abc/test.html?{invalidCharacters}", $"s/abc/test_{new string('_', invalidCharacters.Length)}.html" };
+        return new()
+        {
+            { $"https://www.archive.org/s/abc/test.html?{invalidCharacters}", $"s/abc/test_{new string('_', invalidCharacters.Length)}.html" }
+        };
     }
 }
