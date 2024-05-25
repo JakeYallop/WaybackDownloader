@@ -26,7 +26,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
         [Description("Location to store downloaded webpages.")]
         public DirectoryInfo OutputDir { get; init; } = null!;
 
-        [CommandOption("--downloadsLogDir|-c")]
+        [CommandOption("--downloadsLogDir|-d")]
         [Description("Log location that stores information about which webpages have already been downloaded.")]
         public DirectoryInfo DownloadsLogDir { get; init; } = new("./checkpoints");
 
