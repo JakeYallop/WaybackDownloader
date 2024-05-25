@@ -36,7 +36,7 @@ public sealed class PageWorkerRunner(IServiceProvider serviceProvider, ILogger<P
     private int _numberOfEvaluationsAtRequiredSpeed;
     private async Task EvaluateLimitAsync(string outputDir, int requestedDownloadLimit, CancellationToken cancellationToken)
     {
-        const int SegmentDurationSeconds = 5;
+        const int SegmentDurationSeconds = 2;
         const float MinimumThreshold = 0.9f;
         await Task.Yield();
         while (!cancellationToken.IsCancellationRequested)
