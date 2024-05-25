@@ -11,7 +11,8 @@ internal sealed class CollectedLogMessages
     public ImmutableArray<LogMessage> DrainMessages()
     {
         //Cannot use LINQ here - see https://github.com/dotnet/runtime/issues/101641
-        var array = ImmutableArray.CreateBuilder<LogMessage>(_messages.Count);
+        //Do not use .Count - this locks the ConcurrentQueue and is very slow
+        var array = ImmutableArray.CreateBuilder<LogMessage>(20);
         while (_messages.TryDequeue(out var m))
         {
             array.Add(m);

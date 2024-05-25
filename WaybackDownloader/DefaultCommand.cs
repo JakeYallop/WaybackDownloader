@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console;
 using Spectre.Console.Cli;
-using WaybackDownloader.Logging;
 using WaybackDownloader.Services;
 using WaybackDownloader.Spectre;
 using Settings = WaybackDownloader.DefaultCommand.Settings;
@@ -21,10 +20,12 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
         PrintSettings(settings);
 
         ServiceProvider? serviceProvider = null;
-        Task? pageWokerRunnerTask = null;
+        Task? pageWorkerRunnerTask = null;
+        Task? uiTask = null;
 
-        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        cts.Token.Register(() => AnsiConsole.WriteLine("Shutting down..."));
+        cancellationToken.Register(() => AnsiConsole.WriteLine("Shutting down..."));
+        using var workerCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var uiCts = new CancellationTokenSource();
 
         try
         {
@@ -58,10 +59,9 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
 
             var downloaderService = serviceProvider.GetRequiredService<DownloaderService>();
             var pageWorkerRunner = serviceProvider.GetRequiredService<PageWorkerRunner>();
-            var loggingMessagesAccessor = serviceProvider.GetRequiredService<CollectedLogMessages>();
             var ui = serviceProvider.GetRequiredService<Ui>();
 
-            var uiTask = ui.DrawUiAsync(cts.Token);
+            uiTask = ui.DrawUiAsync(uiCts.Token);
 
             var outputDir = settings.OutputDir;
             outputDir.Create();
@@ -71,25 +71,17 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
                 return 0;
             }
 
-            var downloaderTask = downloaderService.StartDownloadAsync(settings.MatchUrl, settings.MatchType, settings.ParsedFilters, settings.LimitPages, cts.Token);
-            pageWorkerRunner.StartTasks(outputDir.FullName, settings.RateLimit, cts.Token);
+            var downloaderTask = downloaderService.StartDownloadAsync(settings.MatchUrl, settings.MatchType, settings.ParsedFilters, settings.LimitPages, workerCts.Token);
+            pageWorkerRunner.StartTasks(outputDir.FullName, settings.RateLimit, workerCts.Token);
+            pageWorkerRunnerTask = pageWorkerRunner.WaitForCompletionAsync();
             await downloaderTask.ConfigureAwait(false);
-            pageWokerRunnerTask = pageWorkerRunner.WaitForCompletionAsync();
-            await pageWokerRunnerTask.ConfigureAwait(false);
+            await pageWorkerRunnerTask.ConfigureAwait(false);
 
-            await cts.CancelAsync().ConfigureAwait(false);
+            await workerCts.CancelAsync().ConfigureAwait(false);
+            await uiCts.CancelAsync().ConfigureAwait(false);
 
             await uiTask.ConfigureAwait(false);
             await serviceProvider.DisposeAsync().ConfigureAwait(false);
-
-            foreach (var item in loggingMessagesAccessor.DrainMessages())
-            {
-                AnsiConsole.WriteLine(item.Message);
-                if (item.Exception is not null)
-                {
-                    AnsiConsole.WriteException(item.Exception);
-                }
-            }
             return 0;
         }
 #pragma warning disable CA1031 // Do not catch general exception types
@@ -116,6 +108,15 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
             }
             else
             {
+                if (pageWorkerRunnerTask is not null)
+                {
+                    await pageWorkerRunnerTask.ConfigureAwait(false);
+                }
+                await uiCts.CancelAsync().ConfigureAwait(false);
+                if (uiTask is not null)
+                {
+                    await uiTask.ConfigureAwait(false);
+                }
                 var disposeException = await DisposeProviderAsync(serviceProvider).ConfigureAwait(false);
                 if (disposeException is not null)
                 {

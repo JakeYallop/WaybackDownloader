@@ -36,9 +36,9 @@ internal sealed class MockDataHttpMessageHandler : HttpMessageHandler
         return a;
     }
 
-    //private static int _year = 1001;
-    //private static int GetYear() => Interlocked.Increment(ref _year);
-    private static int GetYear() => 2000;
+    private static int _year = 1001;
+    private static int GetYear() => Interlocked.Increment(ref _year);
+    //private static int GetYear() => 2000;
 
     private static async Task<HttpResponseMessage> CreateHtmlResponseAsync(CancellationToken cancellationToken)
     {

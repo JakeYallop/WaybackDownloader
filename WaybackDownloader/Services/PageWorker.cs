@@ -42,35 +42,39 @@ internal sealed class PageWorker(
     {
         var shouldExit = false;
         cancellationToken.Register(() => shouldExit = true);
-
-        while (!shouldExit && await _reader.WaitToReadAsync(default).ConfigureAwait(false))
+        try
         {
-            while (!shouldExit && !cancellationToken.IsCancellationRequested && _reader.TryRead(out var record))
+            while (!shouldExit && await _reader.WaitToReadAsync(default).ConfigureAwait(false))
             {
-                if (!PathUtilities.TryGetNormalizedFilePath(record.Original, out var normalizedPath))
+                while (!shouldExit && !cancellationToken.IsCancellationRequested && _reader.TryRead(out var record))
                 {
-                    logger.UrlCouldNotBeConverted(record.Original);
-                    Counters.FilesSkipped.Increment();
-                    continue;
-                }
+                    if (!PathUtilities.TryGetNormalizedFilePath(record.Original, out var normalizedPath))
+                    {
+                        logger.UrlCouldNotBeConverted(record.Original);
+                        Counters.FilesSkipped.Increment();
+                        continue;
+                    }
 
-                logger.UrlTransformed(record.Original, normalizedPath);
+                    logger.UrlTransformed(record.Original, normalizedPath);
 
-                var writePath = Path.Combine(outputDir, normalizedPath);
-                var pageKey = new PageKey(record.UrlKey, normalizedPath);
-                var foundPage = pagesStore.TryGetDownloadedPageTimestamp(pageKey.Value, out var timestamp);
-                if (!foundPage || timestamp < record.Timestamp)
-                {
-                    await TryWritePageAsync(record, writePath, pageKey, foundPage, CancellationToken.None).ConfigureAwait(false);
-                }
-                else
-                {
-                    logger.UrlAlreadyDownloaded(record.Original);
-                    Counters.FilesSkipped.Increment();
+                    var writePath = Path.Combine(outputDir, normalizedPath);
+                    var pageKey = new PageKey(record.UrlKey, normalizedPath);
+                    var foundPage = pagesStore.TryGetDownloadedPageTimestamp(pageKey.Value, out var timestamp);
+                    if (!foundPage || timestamp < record.Timestamp)
+                    {
+                        await TryWritePageAsync(record, writePath, pageKey, foundPage, CancellationToken.None).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        logger.UrlAlreadyDownloaded(record.Original);
+                        Counters.FilesSkipped.Increment();
+                    }
                 }
             }
         }
-
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
         logger.ExitingWorker();
     }
 
