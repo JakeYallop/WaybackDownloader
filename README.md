@@ -17,10 +17,10 @@ In this command, `www.example.com` is the website to download, and `./example` i
 
 ## Command Line Options
 
-### Download Log Directory
-The Wayback Downloader uses a checkpoints log to store information about which pages its downloaded. By default, a folder is created in the current working directory under "/donwloadLog". To specify a custom path, use the `--downloadsLogDir` option.
+### History Log Directory
+The Wayback Downloader uses a log to store information about webpages it has already downloaded. By default, a folder is created in the current working directory under "/downloadHistory". To specify a custom path, use the `--historyLogDir` option.
 ```bash
-WaybackDownloader.exe <matchUrl> <outputDir> --downloadsLogDir ../../customCheckpointsFolder
+WaybackDownloader.exe <matchUrl> <outputDir> --historyLogDir ../../customHistoryLogFolder
 ```
 
 ### Match Type

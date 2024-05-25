@@ -11,7 +11,7 @@ using WaybackDownloader.Services;
 namespace WaybackDownloader;
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerHttpClientRateLimiter, bool verbose = false, bool mockData = false)
+    public static IServiceCollection AddCoreCommandServices(this IServiceCollection services, RateLimiter pageWorkerHttpClientRateLimiter, string downloadLogPath, bool verbose = false, bool mockData = false)
     {
         services.AddLogging(builder =>
         {
@@ -99,7 +99,7 @@ public static class ServiceCollectionExtensions
         }))
         .AddSingleton<DownloaderService>()
         .AddSingleton<PageWorkerRunner>()
-        .AddSingleton<PagesStore>()
+        .AddSingleton(_ => new PagesStore(downloadLogPath))
         .AddSingleton<IConsoleMessageColorProvider, SpectreConsoleMessageColorProvider>();
 
         return services;

@@ -43,7 +43,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
             services
-                .AddCoreCommandServices(rateLimiter, settings.Verbose, mockData: settings.UseMockHandler)
+                .AddCoreCommandServices(rateLimiter, settings.DownloadHistoryLogDir.FullName, settings.Verbose, settings.UseMockHandler)
                 .AddSingleton(AnsiConsole.Create(new()))
                 .AddSingleton<Ui>()
                 .AddSingleton(new PageFilters([.. settings.PageFilters]));

@@ -8,11 +8,12 @@ internal sealed class PagesStore : IDisposable, IAsyncDisposable
     private readonly FasterKV<string, long> _store;
     private readonly Timer _checkpointTimer;
 
-    public PagesStore(string checkpointsPath)
+    public PagesStore(string downloadHistoryLogPath)
     {
-        _settings = new FasterKVSettings<string, long>(checkpointsPath, logger: null)
+        _settings = new FasterKVSettings<string, long>(downloadHistoryLogPath, logger: null)
         {
             RemoveOutdatedCheckpoints = true,
+            CheckpointDir = downloadHistoryLogPath,
             TryRecoverLatest = true
         };
         _store = new FasterKV<string, long>(_settings);

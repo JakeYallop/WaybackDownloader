@@ -26,9 +26,9 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
         [Description("Location to store downloaded webpages.")]
         public DirectoryInfo OutputDir { get; init; } = null!;
 
-        [CommandOption("--downloadsLogDir|-c")]
+        [CommandOption("--historyLogDir|-h")]
         [Description("Log location that stores information about which webpages have already been downloaded.")]
-        public DirectoryInfo DownloadsLogDir { get; init; } = new("./checkpoints");
+        public DirectoryInfo DownloadHistoryLogDir { get; init; } = new("./downloadHistory");
 
         [CommandOption("-m|--matchType")]
         [DefaultValue(MatchTypes.Exact)]
@@ -164,7 +164,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<DefaultCo
 
         AnsiConsole.WriteLine($"Rate limit (pages/second): {settings.RateLimit}");
         AnsiConsole.WriteLine($"Output directory: {settings.OutputDir}");
-        AnsiConsole.WriteLine($"Checkpoints directory: {settings.DownloadsLogDir}");
+        AnsiConsole.WriteLine($"Checkpoints directory: {settings.DownloadHistoryLogDir}");
 
         if (settings.ClearHistory)
         {
