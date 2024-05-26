@@ -89,7 +89,6 @@ public sealed class PageWorkerRunner(IServiceProvider serviceProvider, ILogger<P
 
     private async ValueTask DisposeAllAsync()
     {
-        AnsiConsole.WriteLine("Waiting up to 10 seconds for workers to finish.");
         await WaitForCompletionAsync().WaitAsync(TimeSpan.FromSeconds(10), CancellationToken.None).ConfigureAwait(false);
         return;
     }

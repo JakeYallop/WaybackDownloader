@@ -34,6 +34,7 @@ internal sealed class Ui(IAnsiConsole console, CollectedLogMessages logMessages)
             _requiresUpdate = false;
         }
         await statsTask.ConfigureAwait(false);
+        LogStats(Counters.FilesWritten.Count, Counters.FilesSkipped.Count, Counters.FilesUpdated.Count);
     }
 
     private static readonly Style BoldStyle = new(decoration: Decoration.Bold);
@@ -47,20 +48,24 @@ internal sealed class Ui(IAnsiConsole console, CollectedLogMessages logMessages)
             var filesSkipped = Counters.FilesSkipped.Count;
             var filesUpdated = Counters.FilesUpdated.Count;
 
-            var p = new Paragraph();
-            p.Append("Files Written: ", BoldStyle);
-            p.Append(filesWritten.ToString(CultureInfo.CurrentCulture), NumberStyle);
-            p.Append(", ");
-            p.Append("Files Skipped: ", BoldStyle);
-            p.Append(filesSkipped.ToString(CultureInfo.CurrentCulture), NumberStyle);
-            p.Append(", ");
-            p.Append("Files Updated: ", BoldStyle);
-            p.Append(filesUpdated.ToString(CultureInfo.CurrentCulture), NumberStyle);
-            p.Append(Environment.NewLine);
-            _console.Write(p);
-
+            LogStats(filesWritten, filesSkipped, filesUpdated);
             await Task.Delay(3000, default).ConfigureAwait(false);
         }
+    }
+
+    public void LogStats(long filesWritten, long filesSkipped, long filesUpdated)
+    {
+        var p = new Paragraph();
+        p.Append("Files Written: ", BoldStyle);
+        p.Append(filesWritten.ToString(CultureInfo.CurrentCulture), NumberStyle);
+        p.Append(", ");
+        p.Append("Files Skipped: ", BoldStyle);
+        p.Append(filesSkipped.ToString(CultureInfo.CurrentCulture), NumberStyle);
+        p.Append(", ");
+        p.Append("Files Updated: ", BoldStyle);
+        p.Append(filesUpdated.ToString(CultureInfo.CurrentCulture), NumberStyle);
+        p.Append(Environment.NewLine);
+        _console.Write(p);
     }
 
     private ImmutableArray<LogMessage> ReadMessages()
