@@ -1,3 +1,6 @@
+[![Version](https://img.shields.io/github/v/tag/JakeYallop/WaybackDownloader?sort=semver&label=Wayback%20Downloader)](https://github.com/JakeYallop/WaybackDownloader/releases)
+[![Build](https://github.com/JakeYallop/WaybackDownloader/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/JakeYallop/WaybackDownloader/actions/workflows/build-and-test.yml)
+
 ## Wayback Machine Downloader
 
 WaybackDownloader is a CLI tool for downloading the latest copy of all pages of a website from the wayback machine.
