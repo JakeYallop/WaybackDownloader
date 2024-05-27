@@ -1,7 +1,6 @@
 ﻿using System.Threading.RateLimiting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 
 namespace WaybackDownloader.Services;
 

@@ -71,7 +71,7 @@ internal sealed partial class DefaultCommand : CancellableAsyncCommand<Settings>
                 return 0;
             }
 
-            var downloaderTask = downloaderService.StartDownloadAsync(settings.MatchUrl, settings.MatchType, settings.ParsedFilters, settings.LimitPages, workerCts.Token);
+            var downloaderTask = downloaderService.StartDownloadAsync(settings.MatchUrl, settings.MatchType, settings.From, settings.To, settings.ParsedFilters, settings.LimitPages, workerCts.Token);
             pageWorkerRunner.StartTasks(outputDir.FullName, settings.RateLimit, workerCts.Token);
             pageWorkerRunnerTask = pageWorkerRunner.WaitForCompletionAsync();
             await downloaderTask.ConfigureAwait(false);
