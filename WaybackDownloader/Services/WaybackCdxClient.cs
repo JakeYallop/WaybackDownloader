@@ -9,25 +9,35 @@ internal sealed class WaybackCdxClient(HttpClient client, ILogger<WaybackCdxClie
     private readonly ILogger<WaybackCdxClient> _logger = logger;
     private readonly HttpClient _client = client;
 
-    public async IAsyncEnumerable<CdxRecord?> GetSnapshotListAsync(string matchUrl, string? matchType = null, CdxFilter[]? filters = null, long? webpageLimit = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<CdxRecord?> GetSnapshotListAsync(string matchUrl, string? matchType = null, long? from = null, long? to = null, CdxFilter[]? filters = null, long? webpageLimit = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
 
-        var baseQueryBuilder = new StringBuilder($"url={matchUrl}");
+        var queryBuilder = new StringBuilder($"url={matchUrl}");
         if (matchType is not null)
         {
             if (!MatchTypes.IsValid(matchType))
             {
                 throw new ArgumentException($"Match type '{matchType}' is not valid. Expected one of [{MatchTypes.Exact}, {MatchTypes.Prefix}, {MatchTypes.Host}, {MatchTypes.Domain}].");
             }
-            baseQueryBuilder.Append(CultureInfo.InvariantCulture, $"&matchType={matchType}");
+            queryBuilder.Append(CultureInfo.InvariantCulture, $"&matchType={matchType}");
+        }
+
+        if (from is not null)
+        {
+            queryBuilder.Append(CultureInfo.InvariantCulture, $"&from={from.Value}");
+        }
+
+        if (to is not null)
+        {
+            queryBuilder.Append(CultureInfo.InvariantCulture, $"&to={to.Value}");
         }
 
         foreach (var filter in filters ?? [])
         {
-            baseQueryBuilder.Append(CultureInfo.InvariantCulture, $"&filter={filter}");
+            queryBuilder.Append(CultureInfo.InvariantCulture, $"&filter={filter}");
         }
 
-        var query = baseQueryBuilder.ToString();
+        var query = queryBuilder.ToString();
         var page = 0;
         var websiteCount = 0L;
         var webpageLimitReached = false;

@@ -12,11 +12,11 @@ internal sealed class DownloaderService(
 {
     private readonly ChannelWriter<CdxRecord> _writer = channel.Writer;
 
-    public async Task StartDownloadAsync(string urlPrefix, string matchType, CdxFilter[] filters, long? webpageLimit, CancellationToken cancellationToken)
+    public async Task StartDownloadAsync(string urlPrefix, string matchType, long? from, long? to, CdxFilter[] filters, long? webpageLimit, CancellationToken cancellationToken)
     {
         try
         {
-            await foreach (var record in GetInitialFileListAsync(urlPrefix, matchType, filters, webpageLimit, cancellationToken))
+            await foreach (var record in GetInitialFileListAsync(urlPrefix, matchType, from, to, filters, webpageLimit, cancellationToken))
             {
                 try
                 {
@@ -44,9 +44,9 @@ internal sealed class DownloaderService(
         }
     }
 
-    private async IAsyncEnumerable<CdxRecord> GetInitialFileListAsync(string url, string matchType, CdxFilter[] filters, long? webpageLimit, [EnumeratorCancellation] CancellationToken cancellationToken)
+    private async IAsyncEnumerable<CdxRecord> GetInitialFileListAsync(string url, string matchType, long? from, long? to, CdxFilter[] filters, long? webpageLimit, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        await foreach (var record in cdxClient.GetSnapshotListAsync(url, matchType, filters, webpageLimit, cancellationToken: cancellationToken).WithCancellation(CancellationToken.None))
+        await foreach (var record in cdxClient.GetSnapshotListAsync(url, matchType, from, to, filters, webpageLimit, cancellationToken: cancellationToken).WithCancellation(CancellationToken.None))
         {
             if (record is null)
             {
