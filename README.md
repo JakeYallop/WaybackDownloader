@@ -104,10 +104,19 @@ WaybackDownloader.exe <matchUrl> <outputDir> -v
 
 ## Advanced Example
 
-Here's an example of a more complex use case:
-
 ```bash
 WaybackDownloader.exe http://example.com ./downloads -m Prefix --from 20200101 --to 20201231 -f !statuscode:404 -p keyword1 -p keyword2 --limitPages 100 -r 10
 ```
 
 This command will download pages from ‘http://example.com’, save them to the ‘./downloads’ directory, match URLs that start with ‘http://example.com’, only download pages from the year 2020, exclude pages with a 404 status code, only save pages that contain ‘keyword1’ or ‘keyword2’, process a maximum of 100 pages, and download a maximum of 10 pages per second. 
+
+## Building
+
+### Prerequisites
+
+* .NET 8.0 SDK or higher
+
+Then, just run the following command:
+```
+dotnet build
+```
