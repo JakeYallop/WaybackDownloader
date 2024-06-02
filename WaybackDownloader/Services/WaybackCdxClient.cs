@@ -43,7 +43,8 @@ internal sealed class WaybackCdxClient(HttpClient client, ILogger<WaybackCdxClie
         var webpageLimitReached = false;
         while (true)
         {
-            var url = $"https://web.archive.org/cdx/search/cdx?{query}&collapse=digest&page={page}";
+            //pageSize == number of ~6000 line blocks, not the number of results on a page
+            var url = $"https://web.archive.org/cdx/search/cdx?{query}&collapse=digest&page={page}&pageSize=5";
 
             _logger.DownloadingSnapshotPage(page, url);
 
