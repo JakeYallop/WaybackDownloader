@@ -4,26 +4,16 @@ using Microsoft.Extensions.Logging;
 
 namespace WaybackDownloader.Services;
 
-public sealed class PageWorkerRunner(IServiceProvider serviceProvider, ILogger<PageWorkerRunner> logger) : IDisposable, IAsyncDisposable
+internal sealed class PageWorkerRunner(IServiceProvider serviceProvider, ILogger<PageWorkerRunner> logger, DownloaderService downloaderService) : IDisposable, IAsyncDisposable
 {
-    private readonly TaskCompletionSource _completionSource = new();
     private readonly List<Task> _tasks = [];
-#pragma warning disable CA2213 // Disposable fields should be disposed
-    //disposed by DI container
+#pragma warning disable CA2213 // Disposable fields should be disposed - disposed by DI container
     private readonly RateLimiter _limiter = serviceProvider.GetRequiredKeyedService<RateLimiter>(PageWorker.PageWorkerHttpClientRateLimiterKey);
 #pragma warning restore CA2213 // Disposable fields should be disposed
-    public void StartTasks(string outputDir, int requestedDownloadLimit, CancellationToken cancellationToken)
-    {
-        _tasks.Add(StartAsync(outputDir, cancellationToken));
-        _tasks.Add(EvaluateLimitAsync(outputDir, requestedDownloadLimit, cancellationToken));
+    public void StartWorkers(string outputDir, int requestedDownloadLimit, CancellationToken cancellationToken)
+        => _tasks.Add(EvaluateWorkersAsync(outputDir, requestedDownloadLimit, cancellationToken));
 
-        Task.WhenAll(_tasks).ContinueWith(t =>
-        {
-            _completionSource.SetResult();
-        }, TaskScheduler.Default);
-    }
-
-    public Task WaitForCompletionAsync() => _completionSource.Task;
+    public Task WaitForCompletionAsync() => Task.WhenAll(_tasks);
 
     private Task StartAsync(string outputDir, CancellationToken cancellationToken)
     {
@@ -33,11 +23,23 @@ public sealed class PageWorkerRunner(IServiceProvider serviceProvider, ILogger<P
 
     private long _lastTotalLeases;
     private int _numberOfEvaluationsAtRequiredSpeed;
-    private async Task EvaluateLimitAsync(string outputDir, int requestedDownloadLimit, CancellationToken cancellationToken)
+    private async Task EvaluateWorkersAsync(string outputDir, int requestedDownloadLimit, CancellationToken cancellationToken)
     {
         const int SegmentDurationSeconds = 2;
         const float MinimumThreshold = 0.9f;
         await Task.Yield();
+        while (!downloaderService.DownloadedFirstPage)
+        {
+            await Task.Delay(1000, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+        }
+
+        _tasks.Add(StartAsync(outputDir, cancellationToken));
+        await Task.Delay(SegmentDurationSeconds * 1000, cancellationToken).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
         while (!cancellationToken.IsCancellationRequested)
         {
             if (_tasks.Any(x => x.IsCompleted))

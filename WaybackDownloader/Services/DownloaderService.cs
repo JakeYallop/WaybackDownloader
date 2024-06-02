@@ -20,6 +20,7 @@ internal sealed class DownloaderService(
             {
                 try
                 {
+                    _downloadedFirstPage = true;
                     await _writer.WriteAsync(record, cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -42,6 +43,13 @@ internal sealed class DownloaderService(
         {
             _writer.Complete();
         }
+    }
+
+    private volatile bool _downloadedFirstPage;
+    public bool DownloadedFirstPage
+    {
+        get => _downloadedFirstPage;
+        private set => _downloadedFirstPage = value;
     }
 
     private async IAsyncEnumerable<CdxRecord> GetInitialFileListAsync(string url, string matchType, long? from, long? to, CdxFilter[] filters, long? webpageLimit, [EnumeratorCancellation] CancellationToken cancellationToken)
